@@ -14,6 +14,21 @@ defmodule DungeonCrawl.Room do
         trigger: Triggers.Rest
       },
       %Room{
+        description: "You found a quiet place. Looks safe for a little nap.",
+        actions: [forward(), rest()],
+        trigger: Triggers.EnemyHidden
+      },
+      %Room{
+        description: "You found some loot. Investigate?",
+        actions: [forward(), search()],
+        trigger: Triggers.Treasure
+      },
+      %Room{
+        description: "You found some loot. Investigate?",
+        actions: [forward(), search()],
+        trigger: Triggers.Trap
+      },
+      %Room{
         description: "You can see the light of day. You found the exit!",
         actions: [forward()],
         trigger: Triggers.Exit
