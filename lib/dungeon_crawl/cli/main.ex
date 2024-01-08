@@ -3,9 +3,12 @@ defmodule DungeonCrawl.Cli.Main do
 
   def start_game do
     welcome_message()
-    Shell.prompt("Press Enter to continue")
 
-    crawl(hero_choice(), DungeonCrawl.Room.all())
+    crawl(
+      hero_choice(),
+      DungeonCrawl.Room.all(),
+      DungeonCrawl.Cli.DifficultyChoice.select()
+    )
   end
 
   defp hero_choice do
@@ -13,7 +16,8 @@ defmodule DungeonCrawl.Cli.Main do
     %{hero | name: "You"}
   end
 
-  defp crawl(%{hit_points: 0}, _) do
+  defp crawl(%{hit_points: 0}, _, _) do
+    # GAME OVER
     Shell.prompt("")
     Shell.cmd("clear")
     Shell.info("Unfortunately your wounds are too many to keep walking.")
@@ -22,7 +26,7 @@ defmodule DungeonCrawl.Cli.Main do
     Shell.prompt("")
   end
 
-  defp crawl(character, rooms) do
+  defp crawl(character, rooms, difficulty) do
     Shell.info("You keep moving forward to the next room.")
     Shell.prompt("Press Enter to continue")
     Shell.cmd("clear")
@@ -32,7 +36,7 @@ defmodule DungeonCrawl.Cli.Main do
     rooms
     |> Enum.random()
     |> DungeonCrawl.Cli.RoomActionsChoice.start()
-    |> trigger_action(character)
+    |> trigger_action(character, difficulty)
     |> handle_action_result
   end
 
@@ -41,16 +45,17 @@ defmodule DungeonCrawl.Cli.Main do
     Shell.info("=== Dungeon Crawl ===")
     Shell.info("You awake in a dungeon full of monsters.")
     Shell.info("You need to survice and find the exit.")
+    Shell.prompt("Press Enter to continue")
   end
 
-  defp trigger_action({room, action}, character) do
+  defp trigger_action({room, action}, character, difficulty) do
     Shell.cmd("clear")
-    room.trigger.run(character, action)
+    room.trigger.run(character, action, difficulty)
   end
 
-  defp handle_action_result({_, :exit}),
+  defp handle_action_result({_, :exit, _}),
     do: Shell.info("You found the exit. You win the game. Congratulations!")
 
-  defp handle_action_result({character, _}),
-    do: crawl(character, DungeonCrawl.Room.all())
+  defp handle_action_result({character, _, difficulty}),
+    do: crawl(character, DungeonCrawl.Room.all(), difficulty)
 end
